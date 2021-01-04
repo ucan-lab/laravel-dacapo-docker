@@ -1,44 +1,44 @@
 version: "3.8"
-volumes:
-  php-fpm-socket:
-  db-store:
 services:
+  app-6x:
+    build:
+      context: .
+      dockerfile: ./infra/docker/php/Dockerfile
+    volumes:
+      - ./core/6x:/work/core
+      - ../packages:/work/packages
+
   app-7x:
     build:
       context: .
       dockerfile: ./infra/docker/php/Dockerfile
     volumes:
-      - php-fpm-socket:/var/run/php-fpm
       - ./core/7x:/work/core
       - ../packages:/work/packages
-    environment:
-      - DB_CONNECTION=mysql
-      - DB_HOST=db-mysql
-      - DB_PORT=3306
-      - DB_DATABASE=${DB_NAME:-laravel_local}
-      - DB_USERNAME=${DB_USER:-phper}
-      - DB_PASSWORD=${DB_PASS:-secret}
 
-  web-7x:
+  app-8x:
     build:
       context: .
-      dockerfile: ./infra/docker/nginx/Dockerfile
-    ports:
-      - 8070:80
+      dockerfile: ./infra/docker/php/Dockerfile
     volumes:
-      - php-fpm-socket:/var/run/php-fpm
-      - ./core/7x:/work/core
+      - ./core/8x:/work/core
+      - ../packages:/work/packages
 
   db-mysql:
-    build:
-      context: .
-      dockerfile: ./infra/docker/mysql/Dockerfile
+    image: mysql:8.0
     ports:
       - 13306:3306
-    volumes:
-      - db-store:/var/lib/mysql
     environment:
-      - MYSQL_DATABASE=${DB_NAME:-laravel_local}
-      - MYSQL_USER=${DB_USER:-phper}
-      - MYSQL_PASSWORD=${DB_PASS:-secret}
-      - MYSQL_ROOT_PASSWORD=${DB_PASS:-secret}
+      - MYSQL_DATABASE=laravel_local
+      - MYSQL_USER=phper
+      - MYSQL_PASSWORD=secret
+      - MYSQL_ROOT_PASSWORD=secret
+
+  db-postgres:
+    image: postgres:13.1
+    ports:
+      - 15432:5432
+    environment:
+      - POSTGRES_DB=laravel_local
+      - POSTGRES_USER=phper
+      - POSTGRES_PASSWORD=secret
